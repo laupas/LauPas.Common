@@ -12,7 +12,11 @@ namespace LauPas
 
         public static void RunTargetAndExit(string[] args)
         {
-            Starter.Create().AddAssembly<BuildExtensions>().Build(args);
+            Starter
+                .Create()
+                .AddAssembly<BuildExtensions>()
+                .Build(args);
+            
             Logger = Starter.Get.Resolve<ILoggerFactory>().CreateLogger("Build");
 
             if (args.Length == 0)
@@ -39,6 +43,11 @@ namespace LauPas
         public static T GetConfigValue<T>(string key, T defaultValue = default(T))
         {
             return Resolve<IConfigService>().Get(key, defaultValue);
+        }
+
+        public static void SetConfigFile(string configFile)
+        {
+            Resolve<IConfigService>().SetConfigFile(configFile);
         }
 
         public static void RunProcess(string command, string args = null, string workingDirectory = null, bool throwOnError = true, bool noEcho = false)
