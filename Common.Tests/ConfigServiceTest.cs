@@ -13,7 +13,7 @@ namespace Common.Tests
         {
             // Arrange
             this.StartAllServices();
-            Starter.Get.Resolve<IConfigService>().SetConfigFile("Config.yml");
+            Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
             var value = Starter.Get.Resolve<IConfigService>().Get<string>("value1");
@@ -28,7 +28,7 @@ namespace Common.Tests
             // Arrange
             Environment.SetEnvironmentVariable("VALUE1", string.Empty);
             this.StartAllServices();
-            Starter.Get.Resolve<IConfigService>().SetConfigFile("Config.yml");
+            Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
             var value = Starter.Get.Resolve<IConfigService>().Get<string>("VALUE1");
@@ -43,7 +43,7 @@ namespace Common.Tests
             // Arrange
             Environment.SetEnvironmentVariable("OtherValue", string.Empty);
             this.StartAllServices();
-            Starter.Get.Resolve<IConfigService>().SetConfigFile("Config.yml");
+            Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
             var value = Starter.Get.Resolve<IConfigService>().Get("OtherValue", "DefaultValue");
@@ -58,7 +58,7 @@ namespace Common.Tests
             // Arrange
             this.Arguments.Add("--value1=newValue");
             this.StartAllServices();
-            Starter.Get.Resolve<IConfigService>().SetConfigFile("Config.yml");
+            Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
             var value = Starter.Get.Resolve<IConfigService>().Get<string>("value1");
@@ -73,7 +73,7 @@ namespace Common.Tests
             // Arrange
             this.Arguments.Add("--value1=newValue");
             this.StartAllServices();
-            Starter.Get.Resolve<IConfigService>().SetConfigFile("Config.yml");
+            Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
             var value = Starter.Get.Resolve<IConfigService>().Get<string>("value1");

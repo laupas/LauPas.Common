@@ -15,7 +15,14 @@ namespace LauPas
             Starter.Create().AddAssembly<BuildExtensions>().Build(args);
             Logger = Starter.Get.Resolve<ILoggerFactory>().CreateLogger("Build");
 
-            RunTargetsAndExit(new[] {args[0]});
+            if (args.Length == 0)
+            {
+                RunTargetsAndExit(new[] {"default"});
+            }
+            else
+            {
+                RunTargetsAndExit(new[] {args[0]});
+            }
         }
 
         public static bool IsEnvVariableExisting(string name)
