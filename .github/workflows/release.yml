@@ -1,0 +1,21 @@
+name: .NET Core
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.100'
+    - name: Build
+      run: dotnet run
+      working-directory: ./build
+      env:
+        NUGET_ORG_API_KEY: ${{secrets.NUGET_ORG_API_KEY}}
+        VERSION_PREFIX: "1.0"
