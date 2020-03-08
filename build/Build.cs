@@ -1,6 +1,4 @@
-﻿using System;
-using LauPas.Common;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 using static Bullseye.Targets;
 using static LauPas.BuildExtensions;

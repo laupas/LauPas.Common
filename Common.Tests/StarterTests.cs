@@ -1,60 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using LauPas.Common;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Common.Tests
 {
-    
-    [TestClass]
-    public abstract class BaseTest
-    {
-//        protected Mock<IProcessHelper> ProcessMock { get; set; }
-        private readonly MockRepository mockRepository = new MockRepository(MockBehavior.Default);
-        private readonly List<Mock> mocks = new List<Mock>();
-
-        protected void StartAllServices()
-        {
-            Starter.Create().AddAssembly(this).Build(this.Arguments.ToArray(), collection =>
-            {
-                foreach (var mock in this.mocks)
-                {
-                    collection
-                        .Where(r => r.ServiceType == mock.GetType().GenericTypeArguments[0])
-                        .ToList()
-                        .ForEach(c =>
-                        {
-                            collection.Remove(c);
-                        });
-                    collection.AddSingleton(mock.GetType().GenericTypeArguments[0], mock.Object);
-                }
-            });
-        }
-        
-        protected Mock<T> RegisterMock<T>() where T : class
-        {
-            var mock = this.CreateMock<T>();
-            this.mocks.Add(mock);
-            return mock;
-        }
-
-        protected Mock<T> CreateMock<T>() where T : class
-        {
-            var mock = this.mockRepository.Create<T>();
-            return mock;
-        }
-
-        protected List<string> Arguments { get; set; } = new List<string>();
-
-    }
-    
     [Singleton]
     internal class Class1
     {
@@ -71,7 +24,7 @@ namespace Common.Tests
         public void Build_Singleton()
         {
             // Arrange
-            this.StartAllServices();
+            this.StartAllServices<Starter>();
 
         // Act
             var singleton1 = Starter.Get.Resolve<Class1>();
@@ -93,7 +46,7 @@ namespace Common.Tests
             this.Arguments.Add("--value2=abcd 1234");
 
             // Act
-            this.StartAllServices();
+            this.StartAllServices<Starter>();
 
             //Assert
             Environment.GetEnvironmentVariable("SINGLE").Should().Be("true");
@@ -107,7 +60,7 @@ namespace Common.Tests
             // Arrange
             this.Arguments.Add("--verbose");
 
-            this.StartAllServices();
+            this.StartAllServices<Starter>();
             StringBuilder builder = new StringBuilder();
             TextWriter writer = new StringWriter(builder);
             Console.SetOut(writer);

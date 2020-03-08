@@ -1,9 +1,6 @@
 # LauPas.Common
 Contains a Starter for an IOC Container and a simple ConfigService
 
-# LauPas.BuildExtensions
-Contains some helpers for build scripts
-
 ## Starter
 ```
 static void Main(string[] args)
@@ -40,6 +37,31 @@ config.yml:
 key1: value1
 key2: value2
 ```
+
+# LauPas.Azure
+Contains some helpers for Azure
+
+## Azure Vault
+Can be used to read values from a Azure Vault
+
+
+``` c#
+var vaultService = Starter.Get.Resolve<IAzureVault>();
+var secret = await vaultService.GetSecretAsync("secretName");
+```
+
+
+needed vaules in config.yml:
+``` yaml
+---
+clientid: client id
+clientsecret: client secret
+vaulturl: url to the vault service
+```
+
+
+# LauPas.BuildExtensions
+Contains some helpers for build scripts
 
 ## How to get started
 Create a new net core console project (for ex: build.csproj in folder build)
