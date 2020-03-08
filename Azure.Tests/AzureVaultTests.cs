@@ -1,5 +1,6 @@
 using Common.Tests;
 using FluentAssertions;
+using LauPas.Azure;
 using LauPas.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

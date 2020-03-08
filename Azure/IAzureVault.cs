@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Azure
+namespace LauPas.Azure
 {
     public interface IAzureVault
     {

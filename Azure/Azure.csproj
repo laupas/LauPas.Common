@@ -2,6 +2,11 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>LauPas.Azure</RootNamespace>
+        <PackageId>LauPas.Azure</PackageId>
+        <Title>Azure</Title>
+        <PackageProjectUrl>https://github.com/laupas/LauPas.Common</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/laupas/LauPas.Common/blob/master/LICENSE</PackageLicenseUrl>
     </PropertyGroup>
 
     <ItemGroup>

@@ -5,7 +5,7 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
-namespace Azure
+namespace LauPas.Azure
 {
     [Singleton]
     internal class AzureVault : IAzureVault
@@ -24,7 +24,7 @@ namespace Azure
             var clientCred = new ClientCredential(clientId, clientSecret);
             this.keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
             {
-                this.logger.LogTrace($"Get Token for: {vaultUri}");
+                this.logger.LogTrace($"Get Token for: {this.vaultUri}");
 
                 var authContext = new AuthenticationContext(authority);
                 var result = await authContext.AcquireTokenAsync(resource, clientCred);
