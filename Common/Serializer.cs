@@ -7,15 +7,18 @@ using Newtonsoft.Json;
 
 namespace LauPas.Common
 {
-    public enum SerializationType
-    {
-        Xml,
-        // JSON,
-        // YAML
-    }
-
+    /// <summary>
+    /// Serialization Helper
+    /// </summary>
     public static class Serializer
     {
+        /// <summary>
+        /// Deserialize
+        /// </summary>
+        /// <param name="data"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         public static T Deserialize<T>(this string data)
         {
             var logger = Starter.Get?.Resolve<ILoggerFactory>().CreateLogger(typeof(Serializer).Name);
@@ -49,6 +52,14 @@ namespace LauPas.Common
             }
         }
         
+        /// <summary>
+        /// Serialize
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="serializationType"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         public static string Serialize<T>(this T data, SerializationType serializationType = SerializationType.Xml)
         {
             var logger = Starter.Get?.Resolve<ILoggerFactory>().CreateLogger(typeof(Serializer).Name);

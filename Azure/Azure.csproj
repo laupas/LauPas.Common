@@ -8,6 +8,7 @@
         <PackageProjectUrl>https://github.com/laupas/LauPas.Common</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/laupas/LauPas.Common/blob/master/LICENSE</PackageLicenseUrl>
         <PackageTags>Azure Vault</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
