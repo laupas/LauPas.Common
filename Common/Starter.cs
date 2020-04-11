@@ -8,6 +8,9 @@ using Scrutor;
 
 namespace LauPas.Common
 {
+    /// <summary>
+    /// The Starter
+    /// </summary>
     public class Starter : IStarterBuilder, IServiceLocator
     {
         private IServiceProvider serviceProvider;
@@ -17,12 +20,19 @@ namespace LauPas.Common
 
         private static Starter CurrentStarter { get; set; }
 
+        /// <summary>
+        /// Create the starter instance.
+        /// </summary>
+        /// <returns></returns>
         public static IStarterBuilder Create()
         {
             CurrentStarter =  new Starter();
             return CurrentStarter;
         }
         
+        /// <summary>
+        /// Get the current instance of the servicelocator
+        /// </summary>
         public  static IServiceLocator Get => CurrentStarter;
 
         private Starter()
@@ -30,18 +40,21 @@ namespace LauPas.Common
             this.serviceCollection = new ServiceCollection();
         }
 
+        /// <inheritdoc />
         public IStarterBuilder AddAssembly(Assembly assembly)
         {
             this.assemblies.Add(assembly);
             return this;
         }
 
+        /// <inheritdoc />
         public IStarterBuilder AddAssembly<TTypeInAssembly>()
         {
             this.assemblies.Add(typeof(TTypeInAssembly).Assembly);
             return this;
         }
 
+        /// <inheritdoc />
         public IServiceLocator Build(string[] args = null, Action<IServiceCollection> extend = null)
         {
             this.SetArguments(args);
@@ -129,6 +142,7 @@ namespace LauPas.Common
             });
         }
 
+        /// <inheritdoc />
         public T Resolve<T>()
         {
             var result =  this.serviceProvider.GetService<T>();
@@ -139,6 +153,7 @@ namespace LauPas.Common
             return result;
         }
 
+        /// <inheritdoc />
         public IStarterBuilder AddModule<TModule>() where TModule : IModule
         {
             this.assemblies.Add(typeof(TModule).Assembly);

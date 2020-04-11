@@ -6,8 +6,12 @@ using Org.BouncyCastle.Security;
 
 namespace LauPas.AnsibleVault
 {
+    /// <summary>
+    /// AnsibleVault
+    /// </summary>
     public class AnsibleVault : IAnsibleVault
     {
+        /// <inheritdoc />
         public string Decode(string password, string input)
         {
             var ansibleValue = new VaultValue(input);
@@ -19,6 +23,7 @@ namespace LauPas.AnsibleVault
             return Encoding.ASCII.GetString(cipher);
         }
 
+        /// <inheritdoc />
         public string Encode(string password, string input)
         {
             var salt = this.CreateSalt();

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using LauPas.AnsibleVault;
+using LauPas.Azure.Model;
 using LauPas.Common;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Extensions.Logging;
@@ -14,15 +15,14 @@ namespace LauPas.Azure
         private readonly ILogger logger;
         private readonly KeyVaultClient keyVaultClient;
         private readonly string vaultUri;
-
+        
         public AzureVault(ILoggerFactory loggerFactory, IConfigService configService)
         {
             this.logger = loggerFactory.CreateLogger(this.GetType().Name);
-            var clientId = configService.Get<string>("clientid");
-            var clientSecret = configService.Get<string>("clientsecret");
-            this.vaultUri = configService.Get<string>("vaulturl");
+            var config = configService.Get<AzureVaultConfiguration>("AzureVaultConfiguration");
+            this.vaultUri = config.VaultUrl;
 
-            var clientCred = new ClientCredential(clientId, clientSecret);
+            var clientCred = new ClientCredential(config.ClientId, config.ClientSecret);
             this.keyVaultClient = new KeyVaultClient(async (authority, resource, scope) =>
             {
                 this.logger.LogTrace($"Get Token for: {this.vaultUri}");

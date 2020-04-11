@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -11,69 +12,140 @@ namespace LauPas.Common.Services
     [Singleton]
     internal class ConfigService : IConfigService
     {
-        private string configFile;
         private ILogger logger;
+        private IDictionary<string, object> values = new Dictionary<string, object>();
 
         public ConfigService(ILoggerFactory loggerFactory)
         {
             this.logger = loggerFactory.CreateLogger(this.GetType().Name);
         }
 
-        public T Get<T>(string key, T defaultValue = default(T))
+        public T Get<T>(string keyName, T defaultValue = default(T))
         {
+            var key = keyName.ToUpperInvariant();
+            var result = default(T);
+            
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
 
-            var valueFromEnv = Environment.GetEnvironmentVariable(key.ToUpperInvariant());
-            if (!string.IsNullOrEmpty(valueFromEnv))
+            var resultType = typeof(T);
+            if (resultType.IsPrimitive || resultType == typeof(Decimal) || resultType == typeof(String)  || resultType == typeof(DateTime))
             {
-                this.logger.LogInformation($"Found key {key} in Env variable");
-                return deserializer.Deserialize<T>(valueFromEnv);
+                result = (T)this.HandleSimpleType(key, resultType, deserializer);
+            }
+            else
+            { 
+                result = (T)this.HandleComplexValue<T>(key, resultType, deserializer);
+            }
+
+            if (result == null && defaultValue != null)
+            {
+                return defaultValue;
+            }
+
+            if (result != null)
+            {
+                return result;
             }
             
-            if (string.IsNullOrEmpty(this.configFile))
-            {
-                throw new Exception($"ConfigFile not set. Call SetConfigFile before.");
-            }
+            throw new KeyNotFoundException($"Key {keyName} not found in ConfigService");
+        }
 
-            if (!File.Exists(this.configFile))
+        private object HandleComplexValue<T>(string key, Type resultType, IDeserializer deserializer)
+        {
+            if (this.values.ContainsKey(key))
             {
-                throw new Exception($"ConfigFile {Path.GetFullPath(this.configFile)} not found.");
-            }
-
-            var input = File.ReadAllText(this.configFile);
-            
-            var value = deserializer.Deserialize<Dictionary<string, object>>(input);
-            if (value == null)
-            {
-                if (defaultValue != null)
+                var temp = this.values[key];
+                if (temp is YamlMappingNode node)
                 {
-                    return defaultValue;
+                    var result = Activator.CreateInstance<T>();
+                    foreach (var yamlNode in node.Children)
+                    {
+                        var property = resultType.GetProperties().SingleOrDefault(p =>
+                            p.Name.ToUpperInvariant() == yamlNode.Key.ToString().Replace("_", string.Empty).ToUpperInvariant());
+                        if (property != null)
+                        {
+                            var propKeyName = $"{key}__{property.Name.ToUpperInvariant()}";
+                            if (Environment.GetEnvironmentVariables().Contains(propKeyName))
+                            {
+                                this.logger.LogTrace($"Found {key}__{property.Name} in EnvironmentVariables");
+                                var valueFromEnv = deserializer.Deserialize(Environment.GetEnvironmentVariable(propKeyName),
+                                    property.PropertyType);
+                                property.SetValue(result, valueFromEnv);
+                            }
+                            else
+                            {
+                                var valueFromValues =
+                                    deserializer.Deserialize(yamlNode.Value.ToString(), property.PropertyType);
+                                property.SetValue(result, valueFromValues);
+                            }
+                        }
+                    }
+                    return result;
                 }
-
-                throw new Exception($"Config file looks empty.");
-            }
-
-            var keyResult = value.Keys.SingleOrDefault(k => k.ToUpperInvariant() == key.ToUpperInvariant());
-
-            if (keyResult == null)
-            {
-                if (defaultValue != null)
+                else if (temp is T)
                 {
-                    return defaultValue;
+                    return temp;
                 }
-
-                throw new Exception($"Key {key} not found in config file.");
             }
-            this.logger.LogInformation($"Found key {key} in config file");
 
-            return (T) value[keyResult];
+            return null;
+        }
+
+        private object HandleSimpleType(string key, Type type, IDeserializer deserializer)
+        {
+            this.logger.LogTrace($"{key} {type.Name} is a simple object");
+            if (Environment.GetEnvironmentVariables().Contains(key))
+            {
+                this.logger.LogTrace($"Found {key} in EnvironmentVariables");
+                return deserializer.Deserialize(Environment.GetEnvironmentVariable(key), type);
+            }
+
+            if (this.values.ContainsKey(key))
+            {
+                this.logger.LogTrace($"Found {key} in ConfigService");
+                return deserializer.Deserialize(this.values[key].ToString(), type);
+            }
+
+            return null;
         }
 
         public void SetConfigFile(string configFileToBeUsed)
         {
-            this.configFile = configFileToBeUsed;
+            if (string.IsNullOrEmpty(configFileToBeUsed))
+            {
+                throw new Exception($"ConfigFile not set. Call SetConfigFile before.");
+            }
+
+            if (!File.Exists(configFileToBeUsed))
+            {
+                throw new Exception($"ConfigFile {Path.GetFullPath(configFileToBeUsed)} not found.");
+            }
+            
+            var input = File.ReadAllText(configFileToBeUsed);
+            
+            var yaml = new YamlStream();
+            yaml.Load(new StringReader(input));
+            
+            var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+
+            foreach (var entry in mapping.Children)
+            {
+                this.values.Add(entry.Key.ToString().ToUpperInvariant(), entry.Value);
+            }
+        }
+
+        public void SetValue<T>(string key, T value)
+        {
+            if (this.values.ContainsKey(key.ToUpperInvariant()))
+            {
+                this.values[key.ToUpperInvariant()] = value;
+            }
+            else
+            {
+                this.values.Add(key.ToUpperInvariant(), value);
+            }
         }
     }
 }

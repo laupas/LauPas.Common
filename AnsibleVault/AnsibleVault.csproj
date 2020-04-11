@@ -11,6 +11,7 @@
         <Description>A simple Ansible Vault implementation for .net core</Description>
         <Authors>Pascal Lauener</Authors>
         <PackageTags>Ansible Vault</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
