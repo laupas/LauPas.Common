@@ -23,6 +23,7 @@ namespace LauPas.Common.Services
         public T Get<T>(string keyName, T defaultValue = default(T))
         {
             var key = keyName.ToUpperInvariant();
+            var result = default(T);
             
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -31,9 +32,28 @@ namespace LauPas.Common.Services
             var resultType = typeof(T);
             if (resultType.IsPrimitive || resultType == typeof(Decimal) || resultType == typeof(String)  || resultType == typeof(DateTime))
             {
-                return (T)this.HandleSimpleType(key, resultType, deserializer);
+                result = (T)this.HandleSimpleType(key, resultType, deserializer);
+            }
+            else
+            { 
+                result = (T)this.HandleComplexValue<T>(key, resultType, deserializer);
             }
 
+            if (result == null && defaultValue != null)
+            {
+                return defaultValue;
+            }
+
+            if (result != null)
+            {
+                return result;
+            }
+            
+            throw new KeyNotFoundException($"Key {keyName} not found in ConfigService");
+        }
+
+        private object HandleComplexValue<T>(string key, Type resultType, IDeserializer deserializer)
+        {
             if (this.values.ContainsKey(key))
             {
                 var temp = this.values[key];
@@ -43,39 +63,34 @@ namespace LauPas.Common.Services
                     foreach (var yamlNode in node.Children)
                     {
                         var property = resultType.GetProperties().SingleOrDefault(p =>
-                            p.Name.ToUpperInvariant() == yamlNode.Key.ToString().Replace("_",string.Empty).ToUpperInvariant());
+                            p.Name.ToUpperInvariant() == yamlNode.Key.ToString().Replace("_", string.Empty).ToUpperInvariant());
                         if (property != null)
                         {
                             var propKeyName = $"{key}__{property.Name.ToUpperInvariant()}";
                             if (Environment.GetEnvironmentVariables().Contains(propKeyName))
                             {
                                 this.logger.LogTrace($"Found {key}__{property.Name} in EnvironmentVariables");
-                                var valueFromEnv = deserializer.Deserialize(Environment.GetEnvironmentVariable(propKeyName), property.PropertyType);
+                                var valueFromEnv = deserializer.Deserialize(Environment.GetEnvironmentVariable(propKeyName),
+                                    property.PropertyType);
                                 property.SetValue(result, valueFromEnv);
                             }
                             else
                             {
-                                var valueFromValues = deserializer.Deserialize(yamlNode.Value.ToString(), property.PropertyType);
+                                var valueFromValues =
+                                    deserializer.Deserialize(yamlNode.Value.ToString(), property.PropertyType);
                                 property.SetValue(result, valueFromValues);
-                                
                             }
                         }
                     }
-
                     return result;
                 }
                 else if (temp is T)
                 {
-                    return (T) temp;
-                } 
+                    return temp;
+                }
             }
 
-            if (defaultValue != null)
-            {
-                return defaultValue;
-            }
-            
-            throw new KeyNotFoundException($"Key {keyName} not found in ConfigService");
+            return null;
         }
 
         private object HandleSimpleType(string key, Type type, IDeserializer deserializer)
@@ -92,8 +107,8 @@ namespace LauPas.Common.Services
                 this.logger.LogTrace($"Found {key} in ConfigService");
                 return deserializer.Deserialize(this.values[key].ToString(), type);
             }
-            
-            throw new KeyNotFoundException($"Key {key} not found in ConfigService");
+
+            return null;
         }
 
         public void SetConfigFile(string configFileToBeUsed)

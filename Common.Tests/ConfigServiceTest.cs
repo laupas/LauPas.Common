@@ -15,6 +15,20 @@ namespace Common.Tests
     public class ConfigServiceTest : BaseTest
     {
         [TestMethod]
+        public void Get_String_NoValueInConfigFile_NoInjectedValue_NoValueInEnv_GetDefaultValue()
+        {
+            // Arrange
+            this.StartAllServices();
+            Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
+
+            // Act
+            var value = Starter.Get.Resolve<IConfigService>().Get("non_existing_value", "default");
+
+            //Assert
+            value.Should().Be("default");
+        }
+        
+        [TestMethod]
         public void Get_String_ValueInConfigFile_NoInjectedValue_NoValueInEnv_GetValue()
         {
             // Arrange
