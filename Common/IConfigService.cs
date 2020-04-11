@@ -19,5 +19,13 @@ namespace LauPas.Common
         /// </summary>
         /// <param name="configFile"></param>
         void SetConfigFile(string configFile);
+
+        /// <summary>
+        /// Adds an value to the configService.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        void SetValue<T>(string key, T value);
     }
 }
