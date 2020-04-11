@@ -196,6 +196,22 @@ namespace Common.Tests
         }
 
         [TestMethod]
+        public void Get_Complex_NoValueInConfigFile_NoInjectedValue_ValueInEnv_GetValue()
+        {
+            // Arrange
+            this.StartAllServices();
+            Environment.SetEnvironmentVariable("COMPLEX_VALUE_NONEXISTING__KEY1", "value2 key1 new");
+            Environment.SetEnvironmentVariable("Complex_Value_NonExisting__KEY2", "value2 key2 new");
+
+            // Act
+            var value = Starter.Get.Resolve<IConfigService>().Get<Complex>("COMPLEX_Value_NONEXISTING");
+
+            //Assert
+            value.Key1.Should().Be("value2 key1 new");
+            value.Key2.Should().Be("value2 key2 new");
+        }
+
+        [TestMethod]
         public void Get_Complex_ValueInConfigFile_NoInjectedValue_ValueInEnv_GetValue()
         {
             // Arrange
@@ -209,6 +225,19 @@ namespace Common.Tests
             //Assert
             value.Key1.Should().Be("another key 1 value");
             value.Key2.Should().Be("value2 key2");
+        }
+        
+        [TestMethod]
+        public void SetConfig_NonExistingFile_DontThorw()
+        {
+            // Arrange
+            this.StartAllServices();
+
+            // Act
+            Action act = () => Starter.Get.Resolve<IConfigService>().SetConfigFile("invalid.yml");
+            
+            //Assert
+            act.Should().NotThrow();
         }
     }
 }

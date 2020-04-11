@@ -1,5 +1,8 @@
 namespace LauPas.AnsibleVault
 {
+    /// <summary>
+    /// AnsibleVault
+    /// </summary>
     public interface IAnsibleVault
     {
         /// <summary>

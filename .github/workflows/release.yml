@@ -21,7 +21,8 @@ jobs:
       working-directory: ./build
       env:
         NUGET_ORG_API_KEY: ${{secrets.NUGET_ORG_API_KEY}}
-        CLIENTID: ${{secrets.CLIENT_ID}}
-        CLIENTSECRET: ${{secrets.CLIENT_SECRET}}
-        VAULTURL: ${{secrets.VAULT_URL}}
+        AZUREVAULTCONFIGURATION__CLIENTID: ${{secrets.CLIENT_ID}}
+        AZUREVAULTCONFIGURATION__CLIENTSECRET: ${{secrets.CLIENT_SECRET}}
+        AZUREVAULTCONFIGURATION__VAULTURL: ${{secrets.VAULT_URL}}
+        AZURESERVICEBUSCONFIGURATION__CONNECTIONSTRING: ${{secrets.SERICEBUS_CONNECTION_STRING}}
         VERSION_PREFIX: "1.0"

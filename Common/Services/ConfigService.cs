@@ -22,8 +22,9 @@ namespace LauPas.Common.Services
 
         public T Get<T>(string keyName, T defaultValue = default(T))
         {
+            this.logger.LogTrace($"Search for {keyName} in ConfigService with default: {defaultValue != null}");
             var key = keyName.ToUpperInvariant();
-            var result = default(T);
+            T result;
             
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -36,7 +37,7 @@ namespace LauPas.Common.Services
             }
             else
             { 
-                result = (T)this.HandleComplexValue<T>(key, resultType, deserializer);
+                result = (T)this.HandleComplexType<T>(key, resultType, deserializer);
             }
 
             if (result == null && defaultValue != null)
@@ -52,65 +53,118 @@ namespace LauPas.Common.Services
             throw new KeyNotFoundException($"Key {keyName} not found in ConfigService");
         }
 
-        private object HandleComplexValue<T>(string key, Type resultType, IDeserializer deserializer)
-        {
-            if (this.values.ContainsKey(key))
-            {
-                var temp = this.values[key];
-                if (temp is YamlMappingNode node)
-                {
-                    var result = Activator.CreateInstance<T>();
-                    foreach (var yamlNode in node.Children)
-                    {
-                        var property = resultType.GetProperties().SingleOrDefault(p =>
-                            p.Name.ToUpperInvariant() == yamlNode.Key.ToString().Replace("_", string.Empty).ToUpperInvariant());
-                        if (property != null)
-                        {
-                            var propKeyName = $"{key}__{property.Name.ToUpperInvariant()}";
-                            if (Environment.GetEnvironmentVariables().Contains(propKeyName))
-                            {
-                                this.logger.LogTrace($"Found {key}__{property.Name} in EnvironmentVariables");
-                                var valueFromEnv = deserializer.Deserialize(Environment.GetEnvironmentVariable(propKeyName),
-                                    property.PropertyType);
-                                property.SetValue(result, valueFromEnv);
-                            }
-                            else
-                            {
-                                var valueFromValues =
-                                    deserializer.Deserialize(yamlNode.Value.ToString(), property.PropertyType);
-                                property.SetValue(result, valueFromValues);
-                            }
-                        }
-                    }
-                    return result;
-                }
-                else if (temp is T)
-                {
-                    return temp;
-                }
-            }
-
-            return null;
-        }
-
         private object HandleSimpleType(string key, Type type, IDeserializer deserializer)
         {
             this.logger.LogTrace($"{key} {type.Name} is a simple object");
             if (Environment.GetEnvironmentVariables().Contains(key))
             {
-                this.logger.LogTrace($"Found {key} in EnvironmentVariables");
+                this.logger.LogTrace($"Found SimpleType {key} in EnvironmentVariables");
                 return deserializer.Deserialize(Environment.GetEnvironmentVariable(key), type);
             }
 
             if (this.values.ContainsKey(key))
             {
-                this.logger.LogTrace($"Found {key} in ConfigService");
+                this.logger.LogTrace($"Found SimpleType {key} in ConfigService");
                 return deserializer.Deserialize(this.values[key].ToString(), type);
             }
 
             return null;
         }
 
+        private object HandleComplexType<T>(string key, Type type, IDeserializer deserializer)
+        {
+            this.logger.LogTrace($"{key} {type.Name} is a complex object");
+
+            var nonDefault = false;
+            var result = Activator.CreateInstance<T>();
+            foreach (var property in type.GetProperties())
+            {
+                var propKeyName = $"{key.ToUpperInvariant()}__{property.Name.ToUpperInvariant()}";
+                this.logger.LogTrace($"Search for property {property.Name} with key {propKeyName}");
+                var tempKeyName = FindKeyInDictionary(propKeyName, Environment.GetEnvironmentVariables().Keys.Cast<string>());
+
+                if (!string.IsNullOrEmpty(tempKeyName))
+                {
+                    this.logger.LogTrace($"Found ComplexType Property {property.Name} in EnvironmentVariables");
+                    var valueFromEnv = deserializer.Deserialize(Environment.GetEnvironmentVariable(tempKeyName),
+                        property.PropertyType);
+                    property.SetValue(result, valueFromEnv);
+                    nonDefault = true;
+                }
+                else
+                {
+                    if (this.values.ContainsKey(key))
+                    {
+                        var temp = this.values[key];
+                        if (temp is YamlMappingNode node)
+                        {
+                            var tempKeyNameToSearch = FindKeyInDictionary(property.Name, node.Children.Select(n => n.Key.ToString()));
+                            if (!string.IsNullOrEmpty(tempKeyNameToSearch))
+                            {
+                                this.logger.LogTrace($"Found ComplexType Property {property.Name} in ConfigService");
+                                var valueFromValues =
+                                    deserializer.Deserialize(node.Children[tempKeyNameToSearch].ToString(), property.PropertyType);
+                                property.SetValue(result, valueFromValues);
+                                nonDefault = true;
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            if (nonDefault)
+            {
+                return result;
+            }
+            
+            return null;
+        }
+
+        private static string FindKeyInDictionary(string keyName, IEnumerable<string> keys)
+        {
+            var keyNameToSearch = keyName;
+            var tempKeyNameToSearch = string.Empty;
+            if (keys.Any(k => k == keyNameToSearch))
+            {
+                return keyNameToSearch;
+            }
+
+            keyNameToSearch = keyName.ToLowerInvariant();
+            if (keys.Any(k => k == keyNameToSearch))
+            {
+                return keyNameToSearch;
+            }
+
+            keyNameToSearch = keyName.ToUpperInvariant();
+            if (keys.Any(k => k == keyNameToSearch))
+            {
+                return keyNameToSearch;
+            }
+
+            keyNameToSearch = UnderscoredNamingConvention.Instance.Apply(keyName);
+            if (keys.Any(k => k == keyNameToSearch))
+            {
+                return keyNameToSearch;
+            }
+
+            keyNameToSearch = PascalCaseNamingConvention.Instance.Apply(keyName);
+            if (keys.Any(k => k == keyNameToSearch))
+            {
+                return keyNameToSearch;
+            }
+
+            foreach (var key in keys)
+            {
+                if (key.ToUpperInvariant() == keyName)
+                {
+                    return key;
+                }
+            }
+
+            return string.Empty;
+        }
+        
         public void SetConfigFile(string configFileToBeUsed)
         {
             if (string.IsNullOrEmpty(configFileToBeUsed))
@@ -120,7 +174,8 @@ namespace LauPas.Common.Services
 
             if (!File.Exists(configFileToBeUsed))
             {
-                throw new Exception($"ConfigFile {Path.GetFullPath(configFileToBeUsed)} not found.");
+                this.logger.LogWarning($"File {Path.GetFullPath(configFileToBeUsed)} not found.");
+                return;
             }
             
             var input = File.ReadAllText(configFileToBeUsed);
