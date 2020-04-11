@@ -5,19 +5,43 @@ using System.Text;
 
 namespace LauPas.AnsibleVault
 {
+    /// <summary>
+    /// Vault Value
+    /// </summary>
     public class VaultValue
     {
+        /// <summary>
+        /// The Salt.
+        /// </summary>
         public byte[] Salt { get; set; }
+        /// <summary>
+        /// The Hamc.
+        /// </summary>
         public byte[] Hamc { get; set; }
+        /// <summary>
+        /// The Body.
+        /// </summary>
         public byte[] Body { get; set; }
+        /// <summary>
+        /// The Id.
+        /// </summary>
         public string Id { get; set; }
+        /// <summary>
+        /// The Header.
+        /// </summary>
         public string Header { get; set; }
 
+        /// <summary>
+        /// Create a new Instance.
+        /// </summary>
         public VaultValue()
         {
             this.Header = "$ANSIBLE_VAULT;1.1;AES256";
         }
         
+        /// <summary>
+        /// Create a new Instance.
+        /// </summary>
         public VaultValue(string text)
         {            
             var parts = text.Split(Environment.NewLine);
@@ -55,6 +79,10 @@ namespace LauPas.AnsibleVault
             }
         }
 
+        /// <summary>
+        /// Create a Vault sting
+        /// </summary>
+        /// <returns></returns>
         public string ToVaultString()
         {
             var result = new List<char>();

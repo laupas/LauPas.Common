@@ -5,13 +5,26 @@ using System.Text;
 
 namespace LauPas.AnsibleVault
 {
+    /// <summary>
+    /// Helpers
+    /// </summary>
     public static class Extensions
     {
+        /// <summary>
+        /// ConvertHexStringListToByteArray
+        /// </summary>
+        /// <param name="hexList"></param>
+        /// <returns></returns>
         public static byte[] ConvertHexStringListToByteArray(this IEnumerable<string> hexList)
         {
             return hexList.SelectMany(ConvertHexStringToBytes).ToArray();
         }
 
+        /// <summary>
+        /// ConvertHexStringToBytes
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static byte[] ConvertHexStringToBytes(this string input)
         {
             var result = new List<byte>();
@@ -25,6 +38,11 @@ namespace LauPas.AnsibleVault
             return result.ToArray();
         }
         
+        /// <summary>
+        /// ConvertToHexString
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static string ConvertToHexString(this byte[] data)
         {
             return string.Create(data.Length * 2, data.ToArray(), (c, state) =>
@@ -37,11 +55,22 @@ namespace LauPas.AnsibleVault
             });
         }
 
+        /// <summary>
+        /// ConvertToHexString
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <returns></returns>
         public static string ConvertToHexString(this string inputString)
         {
             return Encoding.ASCII.GetBytes(inputString).ConvertToHexString();
         }
 
+        /// <summary>
+        /// ConvertByteToHexChar
+        /// </summary>
+        /// <param name="inputByte"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public static char ConvertByteToHexChar(this byte inputByte)
         {
             if(inputByte < 10)
