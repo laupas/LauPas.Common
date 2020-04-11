@@ -7,11 +7,11 @@ namespace LauPas.AnsibleVault.Tests
     [TestClass]
     public class AnsibleVaultTests
     {
-        private IAnsibleVault ansibleVault;
+        private readonly IAnsibleVault ansibleVault;
 
         public AnsibleVaultTests()
         {
-            this.ansibleVault = new LauPas.AnsibleVault.AnsibleVault();            
+            this.ansibleVault = new AnsibleVault();            
         }
         
         [TestMethod]
@@ -61,7 +61,7 @@ namespace LauPas.AnsibleVault.Tests
             var decryptedValue = this.ansibleVault.Encode("1234", input);
             
             // Assert
-            var result = new LauPas.AnsibleVault.AnsibleVault().Decode("1234", decryptedValue);
+            var result = new AnsibleVault().Decode("1234", decryptedValue);
             result.Should().Be(input);
         }
 

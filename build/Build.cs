@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 using static Bullseye.Targets;
 using static LauPas.BuildExtensions;
@@ -8,7 +7,7 @@ namespace Build
 {
     static class Build
     {
-        public static bool push = false;
+        private static bool push;
         static void Main(string[] args)
         {
             Target("default", DependsOn(new string[]

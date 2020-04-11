@@ -12,7 +12,7 @@ namespace Common.Tests
         public void Get_ValueInConfigFile_NoValueInEnv_GetValue()
         {
             // Arrange
-            this.StartAllServices<IConfigService>();
+            this.StartAllServices();
             Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
@@ -27,7 +27,7 @@ namespace Common.Tests
         {
             // Arrange
             Environment.SetEnvironmentVariable("VALUE1", string.Empty);
-            this.StartAllServices<IConfigService>();
+            this.StartAllServices();
             Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
@@ -42,7 +42,7 @@ namespace Common.Tests
         {
             // Arrange
             Environment.SetEnvironmentVariable("OtherValue", string.Empty);
-            this.StartAllServices<IConfigService>();
+            this.StartAllServices();
             Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
@@ -57,7 +57,7 @@ namespace Common.Tests
         {
             // Arrange
             this.Arguments.Add("--value1=newValue");
-            this.StartAllServices<IConfigService>();
+            this.StartAllServices();
             Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act
@@ -72,7 +72,7 @@ namespace Common.Tests
         {
             // Arrange
             this.Arguments.Add("--value1=newValue");
-            this.StartAllServices<IConfigService>();
+            this.StartAllServices();
             Starter.Get.Resolve<IConfigService>().SetConfigFile("config.yml");
 
             // Act

@@ -9,7 +9,7 @@ namespace Common.Tests
     {
         public SerializerTests()
         {
-            this.StartAllServices<SerializerTests>();
+            this.StartAllServices();
         }
         
         [TestMethod]
@@ -19,7 +19,7 @@ namespace Common.Tests
             var data = "1234";
 
             // Act
-            var value = data.Serialize(SerializationType.Xml);
+            var value = data.Serialize();
 
             //Assert
             value.Should().Be("<?xml version=\"1.0\" encoding=\"utf-16\"?><string>1234</string>");

@@ -61,7 +61,7 @@ namespace LauPas.Common
                     using(var writer = XmlWriter.Create(stringWriter))
                     {
                         xmlSerializer.Serialize(writer, data);
-                        logger?.LogTrace($"Data to be deserialized: XML => {stringWriter.ToString()}");
+                        logger?.LogTrace($"Data to be deserialized: XML => {stringWriter}");
                         return stringWriter.ToString();
                     }
                 }   

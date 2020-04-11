@@ -4,6 +4,7 @@ using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using LauPas.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Common.Tests
@@ -24,7 +25,7 @@ namespace Common.Tests
         public void Build_Singleton()
         {
             // Arrange
-            this.StartAllServices<Starter>();
+            this.StartAllServices();
 
         // Act
             var singleton1 = Starter.Get.Resolve<Class1>();
@@ -46,7 +47,7 @@ namespace Common.Tests
             this.Arguments.Add("--value2=abcd 1234");
 
             // Act
-            this.StartAllServices<Starter>();
+            this.StartAllServices();
 
             //Assert
             Environment.GetEnvironmentVariable("SINGLE").Should().Be("true");
@@ -60,7 +61,7 @@ namespace Common.Tests
             // Arrange
             this.Arguments.Add("--verbose");
 
-            this.StartAllServices<Starter>();
+            this.StartAllServices();
             StringBuilder builder = new StringBuilder();
             TextWriter writer = new StringWriter(builder);
             Console.SetOut(writer);
@@ -79,6 +80,57 @@ namespace Common.Tests
             result.Should().Contain("Error Message");
             result.Should().Contain("Debug Message");
             result.Should().Contain("Trace Message");
+        }
+
+        [TestMethod]
+        public void Build_WithModule_AssemblyAdded()
+        {
+            // Arrange
+            Starter.Create()
+                .AddModule<TestModule>()
+                .Build();
+
+            // Act
+            var testClass = Starter.Get.Resolve<ITestInterface>();
+
+            //Assert
+            testClass.Should().BeOfType<TestClass>();        }
+
+        [TestMethod]
+        public void Build_WithModule_ModuleExtensionCalled()
+        {
+            // Arrange
+            Starter.Create()
+                .AddModule<TestModule>()
+                .Build();
+
+            // Act
+            var testClass1 = Starter.Get.Resolve<ITestInterface>();
+            var testClass2 = Starter.Get.Resolve<ITestInterface>();
+
+            //Assert
+            testClass1.Should().BeSameAs(testClass2);
+        }
+    }
+
+    public interface ITestInterface
+    {
+        
+    }
+
+    internal class TestClass : ITestInterface
+    {
+        public TestClass(ILoggerFactory loggerFactory)
+        {
+            loggerFactory.CreateLogger<TestModule>().LogInformation("Create instance of TestModule");
+        }
+    }
+    
+    public class TestModule : IModule
+    {
+        public void Extend(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddSingleton<TestClass>();
         }
     }
 }

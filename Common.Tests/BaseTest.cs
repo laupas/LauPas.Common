@@ -15,15 +15,27 @@ namespace Common.Tests
         private readonly MockRepository mockRepository = new MockRepository(MockBehavior.Default);
         private readonly List<Mock> mocks = new List<Mock>();
 
-        protected void StartAllServices<TTest>(params Type[] types)
+        protected void StartAllServices()
+        {
+            var starter = Starter.Create().AddAssembly(this.GetType().Assembly);
+            this.Start(starter);
+        }
+
+        protected void StartAllServices<TModule>() where TModule : IModule
+        {
+            var starter = Starter.Create().AddAssembly(this.GetType().Assembly).AddModule<TModule>();
+            this.Start(starter);
+        }
+        
+        protected void StartAllServices<TModule1, TModule2>() where TModule1 : IModule where TModule2 : IModule
+        {
+            var starter = Starter.Create().AddAssembly(this.GetType().Assembly).AddModule<TModule1>().AddModule<TModule2>();
+            this.Start(starter);
+        }
+        
+        private void Start(IStarterBuilder starter)
         {
             Environment.SetEnvironmentVariable("VERBOSE", "true");
-            var starter = Starter.Create().AddAssembly(this.GetType().Assembly).AddAssembly<TTest>();
-            foreach (var type in types)
-            {
-                starter.AddAssembly(type.Assembly);
-            }
-            
             starter.Build(this.Arguments.ToArray(), collection =>
             {
                 foreach (var mock in this.mocks)
@@ -31,15 +43,12 @@ namespace Common.Tests
                     collection
                         .Where(r => r.ServiceType == mock.GetType().GenericTypeArguments[0])
                         .ToList()
-                        .ForEach(c =>
-                        {
-                            collection.Remove(c);
-                        });
+                        .ForEach(c => { collection.Remove(c); });
                     collection.AddSingleton(mock.GetType().GenericTypeArguments[0], mock.Object);
                 }
             });
         }
-        
+
         protected Mock<T> RegisterMock<T>() where T : class
         {
             var mock = this.CreateMock<T>();

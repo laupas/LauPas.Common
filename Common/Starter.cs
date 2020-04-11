@@ -8,49 +8,47 @@ using Scrutor;
 
 namespace LauPas.Common
 {
-    public class Starter : IStarter
+    public class Starter : IStarterBuilder, IServiceLocator
     {
         private IServiceProvider serviceProvider;
         private readonly ServiceCollection serviceCollection;
         private readonly List<Assembly> assemblies = new List<Assembly>();
+        private readonly List<Type> modules = new List<Type>();
 
         private static Starter CurrentStarter { get; set; }
 
-        public static IStarter Create()
+        public static IStarterBuilder Create()
         {
             CurrentStarter =  new Starter();
             return CurrentStarter;
         }
         
-        public  static IStarter Get => CurrentStarter;
+        public  static IServiceLocator Get => CurrentStarter;
 
         private Starter()
         {
             this.serviceCollection = new ServiceCollection();
         }
 
-        public IStarter AddAssembly<TTypeInAssembly>()
+        public IStarterBuilder AddAssembly(Assembly assembly)
+        {
+            this.assemblies.Add(assembly);
+            return this;
+        }
+
+        public IStarterBuilder AddAssembly<TTypeInAssembly>()
         {
             this.assemblies.Add(typeof(TTypeInAssembly).Assembly);
             return this;
         }
 
-        public IStarter Build(string[] args = null, Action<IServiceCollection> extend = null)
+        public IServiceLocator Build(string[] args = null, Action<IServiceCollection> extend = null)
         {
             this.SetArguments(args);
             this.SetLogging();
-            var startupLogger = this.serviceCollection
-                .BuildServiceProvider()
-                .GetService<ILoggerFactory>()
-                .CreateLogger<IStarter>();
-
             
             this.assemblies.Add(this.GetType().Assembly);
             var tempAssemblies = this.assemblies.Distinct();
-            foreach (var tempAssembly in tempAssemblies)
-            {
-                startupLogger.LogTrace($"Add Assembly {tempAssembly.FullName} to container.");
-            }
             
             this.serviceCollection.Scan(scan =>
                 scan.FromAssemblies(tempAssemblies)
@@ -69,6 +67,24 @@ namespace LauPas.Common
                     .WithSingletonLifetime());
             
             extend?.Invoke(this.serviceCollection);
+            
+            var tempServiceProvider = this.serviceCollection
+                .BuildServiceProvider();
+            var startupLogger = tempServiceProvider
+                .GetService<ILoggerFactory>()
+                .CreateLogger<IStarterBuilder>();
+
+            // Only for logging
+            foreach (var tempAssembly in tempAssemblies)
+            {
+                startupLogger.LogTrace($"Add Assembly {tempAssembly.FullName} to container.");
+            }
+
+            foreach (var module in this.modules)
+            {
+                var moduleInstance = (IModule)tempServiceProvider.GetService(module);
+                moduleInstance.Extend(this.serviceCollection);
+            }
             
             this.serviceProvider = this.serviceCollection.BuildServiceProvider();
             return this;
@@ -123,10 +139,12 @@ namespace LauPas.Common
             return result;
         }
 
-        IStarter IStarter.AddAssembly(Assembly assembly)
+        public IStarterBuilder AddModule<TModule>() where TModule : IModule
         {
-            this.assemblies.Add(assembly);
+            this.assemblies.Add(typeof(TModule).Assembly);
+            this.modules.Add(typeof(TModule));
             return this;
         }
+
     }
 }
