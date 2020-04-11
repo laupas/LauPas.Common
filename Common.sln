@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure", "Azure\Azure.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure.Tests", "Azure.Tests\Azure.Tests.csproj", "{C8E69D33-38DC-4434-93F9-117800C4CCDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnsibleVault", "AnsibleVault\AnsibleVault.csproj", "{73ECE585-9AEB-4B2A-834B-E77D03A59DF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnsibleVault.Tests", "AnsibleVault.Tests\AnsibleVault.Tests.csproj", "{211921F5-68F5-4B91-8BB4-0A87C3788540}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,5 +44,13 @@ Global
 		{C8E69D33-38DC-4434-93F9-117800C4CCDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8E69D33-38DC-4434-93F9-117800C4CCDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8E69D33-38DC-4434-93F9-117800C4CCDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73ECE585-9AEB-4B2A-834B-E77D03A59DF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73ECE585-9AEB-4B2A-834B-E77D03A59DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73ECE585-9AEB-4B2A-834B-E77D03A59DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73ECE585-9AEB-4B2A-834B-E77D03A59DF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{211921F5-68F5-4B91-8BB4-0A87C3788540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{211921F5-68F5-4B91-8BB4-0A87C3788540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{211921F5-68F5-4B91-8BB4-0A87C3788540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{211921F5-68F5-4B91-8BB4-0A87C3788540}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
