@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
 
 using static Bullseye.Targets;
 using static LauPas.BuildExtensions;
@@ -7,6 +8,7 @@ namespace Build
 {
     static class Build
     {
+        public static bool push = false;
         static void Main(string[] args)
         {
             Target("default", DependsOn(new string[]
@@ -15,7 +17,8 @@ namespace Build
                 "restore",
                 "build", 
                 "test", 
-                "pack"
+                "pack",
+                "push"
             }));
 
             var buildNumber = string.Empty;
@@ -26,6 +29,7 @@ namespace Build
                 {
                     Logger.LogInformation($"BuildAgent run");
                     SetConfigFile("BuildConfig.yml");
+                    push = true;
                 }
                 else
                 {
@@ -56,12 +60,22 @@ namespace Build
 
             Target("pack", DependsOn("init"), () =>
             {
-                var nugetOrgToken = GetConfigValue<string>("NUGET_ORG_API_KEY");
-
                 RunProcess("dotnet", $"pack . --no-build -c Release -p:Version={buildNumber}", "./..");
-                RunProcess("dotnet", $"nuget push ./**/*.nupkg --no-symbols true -s https://api.nuget.org/v3/index.json -k {nugetOrgToken}", "./..");
             });
-            
+
+            Target("push", DependsOn("init"), () =>
+            {
+                var nugetOrgToken = GetConfigValue<string>("NUGET_ORG_API_KEY");
+                if (push)
+                {
+                    RunProcess("dotnet", $"nuget push ./**/*.nupkg --no-symbols true -s https://api.nuget.org/v3/index.json -k {nugetOrgToken}", "./..");
+                }
+                else
+                {
+                    Logger.LogWarning("No push because local run.");
+                }
+            });
+
             RunTargetAndExit(args);
         }
     }

@@ -39,9 +39,18 @@ namespace LauPas.Common
         {
             this.SetArguments(args);
             this.SetLogging();
+            var startupLogger = this.serviceCollection
+                .BuildServiceProvider()
+                .GetService<ILoggerFactory>()
+                .CreateLogger<IStarter>();
+
             
             this.assemblies.Add(this.GetType().Assembly);
             var tempAssemblies = this.assemblies.Distinct();
+            foreach (var tempAssembly in tempAssemblies)
+            {
+                startupLogger.LogTrace($"Add Assembly {tempAssembly.FullName} to container.");
+            }
             
             this.serviceCollection.Scan(scan =>
                 scan.FromAssemblies(tempAssemblies)
@@ -106,12 +115,17 @@ namespace LauPas.Common
 
         public T Resolve<T>()
         {
-            return this.serviceProvider.GetService<T>();
+            var result =  this.serviceProvider.GetService<T>();
+            if (result == null)
+            {
+                throw new Exception($"Type {typeof(T)} can not bre resolved.");
+            }
+            return result;
         }
 
-        IStarter IStarter.AddAssembly(object referenceObject)
+        IStarter IStarter.AddAssembly(Assembly assembly)
         {
-            this.assemblies.Add(referenceObject.GetType().Assembly);
+            this.assemblies.Add(assembly);
             return this;
         }
     }

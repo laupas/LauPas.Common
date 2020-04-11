@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LauPas.Common;
@@ -14,9 +15,16 @@ namespace Common.Tests
         private readonly MockRepository mockRepository = new MockRepository(MockBehavior.Default);
         private readonly List<Mock> mocks = new List<Mock>();
 
-        protected void StartAllServices<TTest>()
+        protected void StartAllServices<TTest>(params Type[] types)
         {
-            Starter.Create().AddAssembly(this).AddAssembly<TTest>().Build(this.Arguments.ToArray(), collection =>
+            Environment.SetEnvironmentVariable("VERBOSE", "true");
+            var starter = Starter.Create().AddAssembly(this.GetType().Assembly).AddAssembly<TTest>();
+            foreach (var type in types)
+            {
+                starter.AddAssembly(type.Assembly);
+            }
+            
+            starter.Build(this.Arguments.ToArray(), collection =>
             {
                 foreach (var mock in this.mocks)
                 {

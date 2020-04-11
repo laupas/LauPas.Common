@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>LauPas.Azure</RootNamespace>
         <PackageId>LauPas.Azure</PackageId>
         <Title>Azure</Title>
         <PackageProjectUrl>https://github.com/laupas/LauPas.Common</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/laupas/LauPas.Common/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageTags>Azure Vault</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AnsibleVault\AnsibleVault.csproj" />
       <ProjectReference Include="..\Common\Common.csproj" />
     </ItemGroup>
 

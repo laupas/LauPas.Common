@@ -1,5 +1,10 @@
 # LauPas.Common
+![.NET Core](https://github.com/laupas/LauPas.Common/workflows/.NET%20Core/badge.svg?branch=master)
+
 Contains a Starter for an IOC Container and a simple ConfigService
+
+## Install
+[Nuget.org](https://www.nuget.org/packages/LauPas.Common/)
 
 ## Starter
 ```
@@ -8,7 +13,7 @@ static void Main(string[] args)
     Starter
         .Create()
         .AddAssembly<BuildExtensions>() // option 1
-        .AddAssembly(this) // option 2
+        .AddAssembly(this.Assembly) // option 2
         .Build(args);
 
     var service = Starter.Get.Resolve<T>();
@@ -42,12 +47,14 @@ key2: value2
 Contains some helpers for Azure
 
 ## Azure Vault
-Can be used to read values from a Azure Vault
+Can be used to read and write values from a Azure Vault
 
 
 ``` c#
 var vaultService = Starter.Get.Resolve<IAzureVault>();
-var secret = await vaultService.GetSecretAsync("secretName");
+var secret = await vaultService.GetSecretAsync<string>("secretName");
+// Secret will first encrypt with Ansible Vault
+var ansibleSecret = await vaultService.GetSecretAsync<string>("secretName", "password");
 ```
 
 
@@ -60,10 +67,10 @@ vaulturl: url to the vault service
 ```
 
 # LauPas.AnsibleVault
-
+![.NET Core](https://github.com/laupas/LauPas.Common/workflows/.NET%20Core/badge.svg?branch=master)
 
 ## Install
-[Nuget.org](https://www.nuget.org/packages/AnsibleVault/)
+[Nuget.org](https://www.nuget.org/packages/LauPas.AnsibleVault/)
 
 ```
 dotnet add package AnsibleVault
@@ -89,7 +96,12 @@ var vaultValue = ansibleVault.Encode("1234", "abcd");
 ```
 
 # LauPas.BuildExtensions
+![.NET Core](https://github.com/laupas/LauPas.Common/workflows/.NET%20Core/badge.svg?branch=master)
+
 Contains some helpers for build scripts
+
+## Install
+[Nuget.org](https://www.nuget.org/packages/LauPas.BuildExtensions/)
 
 ## How to get started
 Create a new net core console project (for ex: build.csproj in folder build)
