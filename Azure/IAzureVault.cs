@@ -2,6 +2,9 @@
 
 namespace LauPas.Azure
 {
+    /// <summary>
+    /// Azure Vault
+    /// </summary>
     public interface IAzureVault
     {
         /// <summary>
