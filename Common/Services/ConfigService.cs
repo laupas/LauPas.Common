@@ -12,8 +12,8 @@ namespace LauPas.Common.Services
     [Singleton]
     internal class ConfigService : IConfigService
     {
-        private ILogger logger;
-        private IDictionary<string, object> values = new Dictionary<string, object>();
+        private readonly ILogger logger;
+        private readonly IDictionary<string, object> values = new Dictionary<string, object>();
 
         public ConfigService(ILoggerFactory loggerFactory)
         {
@@ -81,7 +81,7 @@ namespace LauPas.Common.Services
             {
                 var propKeyName = $"{key.ToUpperInvariant()}__{property.Name.ToUpperInvariant()}";
                 this.logger.LogTrace($"Search for property {property.Name} with key {propKeyName}");
-                var tempKeyName = FindKeyInDictionary(propKeyName, Environment.GetEnvironmentVariables().Keys.Cast<string>());
+                var tempKeyName = Environment.GetEnvironmentVariables().Keys.Cast<string>().FindEntryWithUndefinedCasesInList(propKeyName);
 
                 if (!string.IsNullOrEmpty(tempKeyName))
                 {
@@ -93,21 +93,25 @@ namespace LauPas.Common.Services
                 }
                 else
                 {
-                    if (this.values.ContainsKey(key))
+                    if (!this.values.ContainsKey(key))
                     {
-                        var temp = this.values[key];
-                        if (temp is YamlMappingNode node)
-                        {
-                            var tempKeyNameToSearch = FindKeyInDictionary(property.Name, node.Children.Select(n => n.Key.ToString()));
-                            if (!string.IsNullOrEmpty(tempKeyNameToSearch))
-                            {
-                                this.logger.LogTrace($"Found ComplexType Property {property.Name} in ConfigService");
-                                var valueFromValues =
-                                    deserializer.Deserialize(node.Children[tempKeyNameToSearch].ToString(), property.PropertyType);
-                                property.SetValue(result, valueFromValues);
-                                nonDefault = true;
-                            }
-                        }
+                        continue;
+                    }
+                    
+                    var temp = this.values[key];
+                    if (!(temp is YamlMappingNode node))
+                    {
+                        continue;
+                    }
+                    
+                    var tempKeyNameToSearch = node.Children.Select(n => n.Key.ToString()).FindEntryWithUndefinedCasesInList(property.Name);
+                    if (!string.IsNullOrEmpty(tempKeyNameToSearch))
+                    {
+                        this.logger.LogTrace($"Found ComplexType Property {property.Name} in ConfigService");
+                        var valueFromValues =
+                            deserializer.Deserialize(node.Children[tempKeyNameToSearch].ToString(), property.PropertyType);
+                        property.SetValue(result, valueFromValues);
+                        nonDefault = true;
                     }
 
                 }
@@ -121,50 +125,6 @@ namespace LauPas.Common.Services
             return null;
         }
 
-        private static string FindKeyInDictionary(string keyName, IEnumerable<string> keys)
-        {
-            var keyNameToSearch = keyName;
-            var tempKeyNameToSearch = string.Empty;
-            if (keys.Any(k => k == keyNameToSearch))
-            {
-                return keyNameToSearch;
-            }
-
-            keyNameToSearch = keyName.ToLowerInvariant();
-            if (keys.Any(k => k == keyNameToSearch))
-            {
-                return keyNameToSearch;
-            }
-
-            keyNameToSearch = keyName.ToUpperInvariant();
-            if (keys.Any(k => k == keyNameToSearch))
-            {
-                return keyNameToSearch;
-            }
-
-            keyNameToSearch = UnderscoredNamingConvention.Instance.Apply(keyName);
-            if (keys.Any(k => k == keyNameToSearch))
-            {
-                return keyNameToSearch;
-            }
-
-            keyNameToSearch = PascalCaseNamingConvention.Instance.Apply(keyName);
-            if (keys.Any(k => k == keyNameToSearch))
-            {
-                return keyNameToSearch;
-            }
-
-            foreach (var key in keys)
-            {
-                if (key.ToUpperInvariant() == keyName)
-                {
-                    return key;
-                }
-            }
-
-            return string.Empty;
-        }
-        
         public void SetConfigFile(string configFileToBeUsed)
         {
             if (string.IsNullOrEmpty(configFileToBeUsed))
