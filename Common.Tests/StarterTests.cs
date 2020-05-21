@@ -87,21 +87,38 @@ namespace Common.Tests
         {
             // Arrange
             Starter.Create()
-                .AddModule<TestModule>()
+                .AddModule<TestModule1>()
                 .Build();
 
             // Act
             var testClass = Starter.Get.Resolve<ITestInterface>();
 
             //Assert
-            testClass.Should().BeOfType<TestClass>();        }
+            testClass.Should().BeOfType<TestClass>();        
+         }
+
+        [TestMethod]
+        public void Build_WithModule_And_Arguments_AssemblyAdded_With_Arguments()
+        {
+            // Arrange
+            Starter.Create()
+                .AddModule<TestModule2, string>("Hello Module")
+                .Build();
+
+            // Act
+            var testClass = Starter.Get.Resolve<ITestInterface>();
+
+            //Assert
+            TestModule2.Arguments.Should().Be("Hello Module");        
+         }
+
 
         [TestMethod]
         public void Build_WithModule_ModuleExtensionCalled()
         {
             // Arrange
             Starter.Create()
-                .AddModule<TestModule>()
+                .AddModule<TestModule1>()
                 .Build();
 
             // Act
@@ -115,22 +132,31 @@ namespace Common.Tests
 
     public interface ITestInterface
     {
-        
     }
 
     internal class TestClass : ITestInterface
     {
         public TestClass(ILoggerFactory loggerFactory)
         {
-            loggerFactory.CreateLogger<TestModule>().LogInformation("Create instance of TestModule");
+            loggerFactory.CreateLogger<TestModule1>().LogInformation("Create instance of TestModule");
         }
     }
     
-    public class TestModule : IModule
+    public class TestModule1 : IModule
     {
         public void Extend(IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<TestClass>();
         }
+    }
+    
+    public class TestModule2 : IModule<string>
+    {
+        public void Extend(IServiceCollection serviceCollection, string arguments)
+        {
+            Arguments = arguments;
+        }
+
+        public static string Arguments { get; set; }
     }
 }

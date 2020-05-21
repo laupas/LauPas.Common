@@ -16,7 +16,7 @@ namespace LauPas.Common
         private IServiceProvider serviceProvider;
         private readonly ServiceCollection serviceCollection;
         private readonly List<Assembly> assemblies = new List<Assembly>();
-        private readonly List<Type> modules = new List<Type>();
+        private readonly List<Tuple<Type,object>> modules = new List<Tuple<Type, object>>();
 
         private static Starter CurrentStarter { get; set; }
 
@@ -39,7 +39,7 @@ namespace LauPas.Common
         {
             this.serviceCollection = new ServiceCollection();
         }
-
+        
         /// <inheritdoc />
         public IStarterBuilder AddAssembly(Assembly assembly)
         {
@@ -51,6 +51,22 @@ namespace LauPas.Common
         public IStarterBuilder AddAssembly<TTypeInAssembly>()
         {
             this.assemblies.Add(typeof(TTypeInAssembly).Assembly);
+            return this;
+        }
+
+        /// <inheritdoc />
+        public IStarterBuilder AddModule<TModule>() where TModule : IModule
+        {
+            this.assemblies.Add(typeof(TModule).Assembly);
+            this.modules.Add(new Tuple<Type, object>(typeof(TModule), null));
+            return this;
+        }
+
+        /// <inheritdoc />
+        public IStarterBuilder AddModule<TModule, TArgument>(TArgument argument) where TModule : IModule<TArgument>
+        {
+            this.assemblies.Add(typeof(TModule).Assembly);
+            this.modules.Add(new Tuple<Type, object>(typeof(TModule), argument));
             return this;
         }
 
@@ -95,8 +111,16 @@ namespace LauPas.Common
 
             foreach (var module in this.modules)
             {
-                var moduleInstance = (IModule)tempServiceProvider.GetService(module);
-                moduleInstance.Extend(this.serviceCollection);
+                var moduleInstance = tempServiceProvider.GetService(module.Item1);
+                if (module.Item2 == null)
+                {
+                    moduleInstance.GetType().GetMethod("Extend").Invoke(moduleInstance, new[] {this.serviceCollection});
+                }
+                else
+                {
+                    moduleInstance.GetType().GetMethod("Extend").Invoke(moduleInstance,
+                        new object[] {this.serviceCollection, module.Item2});
+                }
             }
             
             this.serviceProvider = this.serviceCollection.BuildServiceProvider();
@@ -152,14 +176,6 @@ namespace LauPas.Common
             }
             return result;
         }
-
-        /// <inheritdoc />
-        public IStarterBuilder AddModule<TModule>() where TModule : IModule
-        {
-            this.assemblies.Add(typeof(TModule).Assembly);
-            this.modules.Add(typeof(TModule));
-            return this;
-        }
-
+        
     }
 }

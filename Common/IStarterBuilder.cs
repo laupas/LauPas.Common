@@ -15,6 +15,14 @@ namespace LauPas.Common
         /// <typeparam name="TModule">The module</typeparam>
         /// <returns>The current IStarterBuilder</returns>
         IStarterBuilder AddModule<TModule>() where TModule : IModule;
+
+        /// <summary>
+        /// Add a module to the container.
+        /// </summary>
+        /// <typeparam name="TModule">The module</typeparam>
+        /// <typeparam name="TArgument">The arguments</typeparam>
+        /// <returns>The current IStarterBuilder</returns>
+        IStarterBuilder AddModule<TModule, TArgument>(TArgument argument) where TModule : IModule<TArgument>;
         
         /// <summary>
         /// Add an Assembly to the container.

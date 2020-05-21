@@ -12,8 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Bullseye" Version="3.2.0" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.2" />
+      <PackageReference Include="Bullseye" Version="3.3.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.4" />
     </ItemGroup>
 
     <ItemGroup>
