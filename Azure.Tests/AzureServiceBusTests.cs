@@ -10,7 +10,7 @@ namespace Azure.Tests
     [TestClass]
     public class AzureServiceBusTests : BaseTest
     {
-        [TestMethod]
+        // [TestMethod]
         public void Queue_OneConsumer_SendGetMessage()
         {
             // Arrange
@@ -28,7 +28,7 @@ namespace Azure.Tests
             data.Should().Be("testData");
         }
         
-        [TestMethod]
+        // [TestMethod]
         public void Topic_TwoConsumer_SendGetMessage()
         {
             // Arrange
